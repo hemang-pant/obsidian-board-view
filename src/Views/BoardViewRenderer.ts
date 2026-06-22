@@ -187,7 +187,11 @@ export class BoardViewRenderer extends BasesView {
             return value.split(',').map(v => v.trim()).filter(Boolean);
         }
 
-        return [String(value)];
+        if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+            return [String(value)];
+        }
+
+        return [];
     }
 
 }
