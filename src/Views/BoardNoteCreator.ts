@@ -1,9 +1,9 @@
 import Services from 'Base/Services';
-import { PropertyNativeType } from 'Data/PropertyManager';
 import { TFile } from 'obsidian';
 import { InternalWorkspace } from 'Types/Internal';
 import { getPropertyKeyFromId } from 'Utils';
 import { EMPTY_GROUP_VALUE } from './BoardViewRenderer';
+import { normalizeValueForPropertyType } from './GroupValueNormalizer';
 
 export class BoardNoteCreator {
     private pendingNote: {
@@ -63,7 +63,7 @@ export class BoardNoteCreator {
             await Services.propertyManager.updateFrontmatter(
                 file,
                 groupPropertyKey,
-                this.normalizeValueForPropertyType(groupPropertyKey, groupValue)
+                normalizeValueForPropertyType(groupPropertyKey, groupValue)
             );
         }
 
@@ -73,29 +73,8 @@ export class BoardNoteCreator {
             await Services.propertyManager.updateFrontmatter(
                 file,
                 subGroupPropertyKey,
-                this.normalizeValueForPropertyType(subGroupPropertyKey, subGroupValue)
+                normalizeValueForPropertyType(subGroupPropertyKey, subGroupValue)
             );
         }
-    }
-
-    private normalizeValueForPropertyType(propertyKey: string, value: unknown): unknown {
-        const propertyType = Services.propertyManager.getPropertyType(propertyKey);
-        if (propertyType !== PropertyNativeType.TAGS || value == null) {
-            return value;
-        }
-
-        if (Array.isArray(value)) {
-            return value;
-        }
-
-        if (typeof value === 'string') {
-            return value.split(',').map(v => v.trim()).filter(Boolean);
-        }
-
-        if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-            return [String(value)];
-        }
-
-        return [];
     }
 }

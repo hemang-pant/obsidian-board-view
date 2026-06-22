@@ -2,10 +2,10 @@ import Services from 'Base/Services';
 import { getPropertyKeyFromId } from 'Utils';
 import { BASES_VIEW_ID } from 'main';
 import { BasesView, Notice, QueryController } from 'obsidian';
-import { PropertyNativeType } from 'Data/PropertyManager';
 import { BoardViewDataBuilder } from './BoardDataBuilder';
 import { BoardNoteCreator } from './BoardNoteCreator';
 import { BoardView, BoardViewCallbacks, BoardViewData } from './BoardView';
+import { normalizeValueForPropertyType } from './GroupValueNormalizer';
 import { BoardOptionKeys, BoardOptions, OptionsExtractor } from './OptionsExtractor';
 
 export const EMPTY_GROUP_VALUE = 'Empty Group';
@@ -78,7 +78,7 @@ export class BoardViewRenderer extends BasesView {
             await Services.propertyManager.updateFrontmatter(
                 file,
                 groupPropertyKey,
-                this.normalizeValueForPropertyType(groupPropertyKey, groupPropertyValue)
+                normalizeValueForPropertyType(groupPropertyKey, groupPropertyValue)
             );
         }
 
@@ -88,7 +88,7 @@ export class BoardViewRenderer extends BasesView {
             await Services.propertyManager.updateFrontmatter(
                 file,
                 subGroupPropertyKey,
-                this.normalizeValueForPropertyType(subGroupPropertyKey, subGroupPropertyValue)
+                normalizeValueForPropertyType(subGroupPropertyKey, subGroupPropertyValue)
             );
         }
     }
@@ -171,27 +171,6 @@ export class BoardViewRenderer extends BasesView {
             options.groupProperty,
             options.subGroupProperty
         );
-    }
-
-    private normalizeValueForPropertyType(propertyKey: string, value: unknown): unknown {
-        const propertyType = Services.propertyManager.getPropertyType(propertyKey);
-        if (propertyType !== PropertyNativeType.TAGS || value == null) {
-            return value;
-        }
-
-        if (Array.isArray(value)) {
-            return value;
-        }
-
-        if (typeof value === 'string') {
-            return value.split(',').map(v => v.trim()).filter(Boolean);
-        }
-
-        if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-            return [String(value)];
-        }
-
-        return [];
     }
 
 }
