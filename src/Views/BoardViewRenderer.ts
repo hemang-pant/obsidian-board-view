@@ -5,6 +5,7 @@ import { BasesView, Notice, QueryController } from 'obsidian';
 import { BoardViewDataBuilder } from './BoardDataBuilder';
 import { BoardNoteCreator } from './BoardNoteCreator';
 import { BoardView, BoardViewCallbacks, BoardViewData } from './BoardView';
+import { normalizeValueForPropertyType } from './GroupValueNormalizer';
 import { BoardOptionKeys, BoardOptions, OptionsExtractor } from './OptionsExtractor';
 
 export const EMPTY_GROUP_VALUE = 'Empty Group';
@@ -61,7 +62,7 @@ export class BoardViewRenderer extends BasesView {
         return boardData;
     }
 
-    private async handleCardDrop(filePath: string, groupPropertyId: string, groupPropertyValue?: string | null, subGroupPropertyId?: string | null, subGroupPropertyValue?: string | null) {
+    private async handleCardDrop(filePath: string, groupPropertyId: string, groupPropertyValue?: unknown, subGroupPropertyId?: string | null, subGroupPropertyValue?: unknown) {
         // If drop target has formula group, don't update frontmatter
         if (groupPropertyId.startsWith('formula.') || subGroupPropertyId?.startsWith('formula.')) {
             new Notice('Cannot drop card into formula group');
@@ -74,13 +75,21 @@ export class BoardViewRenderer extends BasesView {
         // Update Group
         if (groupPropertyId && groupPropertyValue !== undefined) {
             const groupPropertyKey = getPropertyKeyFromId(groupPropertyId);
-            await Services.propertyManager.updateFrontmatter(file, groupPropertyKey, groupPropertyValue);
+            await Services.propertyManager.updateFrontmatter(
+                file,
+                groupPropertyKey,
+                normalizeValueForPropertyType(groupPropertyKey, groupPropertyValue)
+            );
         }
 
         // Update Sub Group
         if (subGroupPropertyId && subGroupPropertyValue !== undefined) {
             const subGroupPropertyKey = getPropertyKeyFromId(subGroupPropertyId);
-            await Services.propertyManager.updateFrontmatter(file, subGroupPropertyKey, subGroupPropertyValue);
+            await Services.propertyManager.updateFrontmatter(
+                file,
+                subGroupPropertyKey,
+                normalizeValueForPropertyType(subGroupPropertyKey, subGroupPropertyValue)
+            );
         }
     }
 

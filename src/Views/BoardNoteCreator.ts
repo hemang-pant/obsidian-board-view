@@ -3,6 +3,7 @@ import { TFile } from 'obsidian';
 import { InternalWorkspace } from 'Types/Internal';
 import { getPropertyKeyFromId } from 'Utils';
 import { EMPTY_GROUP_VALUE } from './BoardViewRenderer';
+import { normalizeValueForPropertyType } from './GroupValueNormalizer';
 
 export class BoardNoteCreator {
     private pendingNote: {
@@ -59,13 +60,21 @@ export class BoardNoteCreator {
         // Assign group value (skip if EMPTY_GROUP_VALUE or missing property ID)
         if (groupPropertyId && groupValue !== null && groupValue !== EMPTY_GROUP_VALUE) {
             const groupPropertyKey = getPropertyKeyFromId(groupPropertyId);
-            await Services.propertyManager.updateFrontmatter(file, groupPropertyKey, groupValue);
+            await Services.propertyManager.updateFrontmatter(
+                file,
+                groupPropertyKey,
+                normalizeValueForPropertyType(groupPropertyKey, groupValue)
+            );
         }
 
         // Assign sub-group value (skip if EMPTY_GROUP_VALUE or missing property ID)
         if (subGroupPropertyId && subGroupValue !== undefined && subGroupValue !== null && subGroupValue !== EMPTY_GROUP_VALUE) {
             const subGroupPropertyKey = getPropertyKeyFromId(subGroupPropertyId);
-            await Services.propertyManager.updateFrontmatter(file, subGroupPropertyKey, subGroupValue);
+            await Services.propertyManager.updateFrontmatter(
+                file,
+                subGroupPropertyKey,
+                normalizeValueForPropertyType(subGroupPropertyKey, subGroupValue)
+            );
         }
     }
 }
