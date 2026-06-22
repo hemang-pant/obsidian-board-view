@@ -198,6 +198,6 @@ export default class BoardViewPlugin extends Plugin {
 		if (prop.startsWith('file.')) return false;
 		const propKey = getPropertyKeyFromId(prop);
 		const type = Services.propertyManager.getPropertyType(propKey);
-		return type !== 'tags' && type !== 'multitext' && type !== 'aliases';
+		return type !== 'multitext' && type !== 'aliases';
 	}
 }

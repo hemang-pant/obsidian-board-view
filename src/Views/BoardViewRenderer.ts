@@ -2,6 +2,7 @@ import Services from 'Base/Services';
 import { getPropertyKeyFromId } from 'Utils';
 import { BASES_VIEW_ID } from 'main';
 import { BasesView, Notice, QueryController } from 'obsidian';
+import { PropertyNativeType } from 'Data/PropertyManager';
 import { BoardViewDataBuilder } from './BoardDataBuilder';
 import { BoardNoteCreator } from './BoardNoteCreator';
 import { BoardView, BoardViewCallbacks, BoardViewData } from './BoardView';
@@ -61,7 +62,7 @@ export class BoardViewRenderer extends BasesView {
         return boardData;
     }
 
-    private async handleCardDrop(filePath: string, groupPropertyId: string, groupPropertyValue?: string | null, subGroupPropertyId?: string | null, subGroupPropertyValue?: string | null) {
+    private async handleCardDrop(filePath: string, groupPropertyId: string, groupPropertyValue?: unknown, subGroupPropertyId?: string | null, subGroupPropertyValue?: unknown) {
         // If drop target has formula group, don't update frontmatter
         if (groupPropertyId.startsWith('formula.') || subGroupPropertyId?.startsWith('formula.')) {
             new Notice('Cannot drop card into formula group');
@@ -74,13 +75,21 @@ export class BoardViewRenderer extends BasesView {
         // Update Group
         if (groupPropertyId && groupPropertyValue !== undefined) {
             const groupPropertyKey = getPropertyKeyFromId(groupPropertyId);
-            await Services.propertyManager.updateFrontmatter(file, groupPropertyKey, groupPropertyValue);
+            await Services.propertyManager.updateFrontmatter(
+                file,
+                groupPropertyKey,
+                this.normalizeValueForPropertyType(groupPropertyKey, groupPropertyValue)
+            );
         }
 
         // Update Sub Group
         if (subGroupPropertyId && subGroupPropertyValue !== undefined) {
             const subGroupPropertyKey = getPropertyKeyFromId(subGroupPropertyId);
-            await Services.propertyManager.updateFrontmatter(file, subGroupPropertyKey, subGroupPropertyValue);
+            await Services.propertyManager.updateFrontmatter(
+                file,
+                subGroupPropertyKey,
+                this.normalizeValueForPropertyType(subGroupPropertyKey, subGroupPropertyValue)
+            );
         }
     }
 
@@ -162,6 +171,23 @@ export class BoardViewRenderer extends BasesView {
             options.groupProperty,
             options.subGroupProperty
         );
+    }
+
+    private normalizeValueForPropertyType(propertyKey: string, value: unknown): unknown {
+        const propertyType = Services.propertyManager.getPropertyType(propertyKey);
+        if (propertyType !== PropertyNativeType.TAGS || value == null) {
+            return value;
+        }
+
+        if (Array.isArray(value)) {
+            return value;
+        }
+
+        if (typeof value === 'string') {
+            return value.split(',').map(v => v.trim()).filter(Boolean);
+        }
+
+        return [String(value)];
     }
 
 }

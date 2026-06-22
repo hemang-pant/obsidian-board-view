@@ -39,7 +39,7 @@ export interface BoardViewData {
 }
 
 export interface BoardViewCallbacks {
-    onCardDrop: (itemId: string, groupPropertyId: string, groupPropertyValue?: string | null, subGroupPropertyId?: string | null, subGroupPropertyValue?: string | null) => void;
+    onCardDrop: (itemId: string, groupPropertyId: string, groupPropertyValue?: unknown, subGroupPropertyId?: string | null, subGroupPropertyValue?: unknown) => void;
     onHideGroup: (groupValue: string) => void;
     onHideSubGroup: (subGroupValue: string) => void;
     onMoveGroup: (groupValue: string, direction: 'left' | 'right') => void;
@@ -413,7 +413,7 @@ export class BoardView {
                     const groupValue = column ? column.rawValue : newGroupId;
                     const subGroupValue = row ? row.rawValue : newSubGroupId;
 
-                    callbacks.onCardDrop(itemId, this.data.groupPropertyId, groupValue as (string | null | undefined), this.data.subGroupPropertyId, subGroupValue as (string | null | undefined));
+                    callbacks.onCardDrop(itemId, this.data.groupPropertyId, groupValue, this.data.subGroupPropertyId, subGroupValue);
                 }
             }
         });
